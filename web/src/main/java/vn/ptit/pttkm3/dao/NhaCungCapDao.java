@@ -14,6 +14,7 @@ public final class NhaCungCapDao {
     public NhaCungCapDao(DataSource dataSource) { this.dataSource = dataSource; }
 
     public record Page(List<NhaCungCap> items, int page, int pageCount, long total) { }
+    public enum DeleteResult { DELETED, IN_USE, NOT_FOUND }
 
     public Page search(String keyword, int requestedPage) throws SQLException {
         String q = keyword == null ? "" : keyword.strip();
@@ -114,6 +115,61 @@ public final class NhaCungCapDao {
         try(Connection c=dataSource.getConnection(); PreparedStatement p=c.prepareStatement(sql)) {
             p.setString(1,name);p.setString(2,address);p.setString(3,phone);p.setString(4,phoneCanonical);p.setString(5,email);p.setString(6,emailCanonical);p.setLong(7,id);p.setLong(8,expectedVersion);
             return p.executeUpdate()==1;
+        }
+    }
+
+    public DeleteResult deleteIfUnused(long id) throws SQLException {
+        try (Connection c = dataSource.getConnection()) {
+            c.setAutoCommit(false);
+            try {
+                try (PreparedStatement p = c.prepareStatement(
+                        "SELECT id FROM tblNhaCungCap WHERE id=? FOR UPDATE")) {
+                    p.setLong(1, id);
+                    try (ResultSet r = p.executeQuery()) {
+                        if (!r.next()) {
+                            c.rollback();
+                            return DeleteResult.NOT_FOUND;
+                        }
+                    }
+                }
+
+                try (PreparedStatement p = c.prepareStatement(
+                        "SELECT 1 FROM tblPhieuNhap WHERE nhaCungCapId=? LIMIT 1")) {
+                    p.setLong(1, id);
+                    try (ResultSet r = p.executeQuery()) {
+                        if (r.next()) {
+                            c.rollback();
+                            return DeleteResult.IN_USE;
+                        }
+                    }
+                }
+
+                try (PreparedStatement p = c.prepareStatement("DELETE FROM tblNhaCungCap WHERE id=?")) {
+                    p.setLong(1, id);
+                    if (p.executeUpdate() != 1) {
+                        c.rollback();
+                        return DeleteResult.NOT_FOUND;
+                    }
+                }
+                try (PreparedStatement p = c.prepareStatement("DELETE FROM tblThanhVien WHERE id=?")) {
+                    p.setLong(1, id);
+                    if (p.executeUpdate() != 1) throw new SQLException("Supplier member row missing");
+                }
+                c.commit();
+                return DeleteResult.DELETED;
+            } catch (SQLException | RuntimeException e) {
+                boolean rollbackSucceeded = true;
+                try {
+                    c.rollback();
+                } catch (SQLException rollbackError) {
+                    rollbackSucceeded = false;
+                    e.addSuppressed(rollbackError);
+                }
+                if (rollbackSucceeded && e instanceof SQLException sqlError && "23000".equals(sqlError.getSQLState())) {
+                    return DeleteResult.IN_USE;
+                }
+                throw e;
+            }
         }
     }
 

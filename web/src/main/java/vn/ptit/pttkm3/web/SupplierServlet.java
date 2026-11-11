@@ -91,7 +91,54 @@ public final class SupplierServlet extends HttpServlet {
         String path=req.getPathInfo()==null?"/":req.getPathInfo();
         if("/add".equals(path)){create(req,res);return;}
         if("/edit".equals(path)){update(req,res);return;}
+        if("/action".equals(path)){manageAction(req,res);return;}
         res.sendError(404);
+    }
+    private void manageAction(HttpServletRequest req,HttpServletResponse res) throws ServletException,IOException {
+        String action=value(req,"action"),query=safeQuery(req.getParameter("q"));
+        int page=safePage(req.getParameter("page"));
+        long id;
+        try { id=parseId(req.getParameter("supplierId")); }
+        catch(RuntimeException e) {
+            setSupplierFlash(req,"error","Yêu cầu không hợp lệ. Hãy chọn một nhà cung cấp rồi thử lại.");
+            redirectToList(req,res,query,page);return;
+        }
+        if(!"edit".equals(action)&&!"delete".equals(action)) {
+            setSupplierFlash(req,"error","Thao tác không hợp lệ. Hãy tải lại danh sách và thử lại.");
+            redirectToList(req,res,query,page);return;
+        }
+        try {
+            if("edit".equals(action)) {
+                if(service.find(id)==null) {
+                    setSupplierFlash(req,"error","Nhà cung cấp không còn tồn tại. Danh sách đã được cập nhật.");
+                    redirectToList(req,res,query,page);return;
+                }
+                String editUrl=req.getContextPath()+"/app/suppliers/edit?id="+id
+                        +"&q="+java.net.URLEncoder.encode(query,java.nio.charset.StandardCharsets.UTF_8)
+                        +"&page="+page;
+                res.sendRedirect(editUrl);return;
+            }
+            switch(service.delete(id)) {
+                case DELETED -> setSupplierFlash(req,"success","Đã xóa nhà cung cấp thành công.");
+                case IN_USE -> setSupplierFlash(req,"error","Không thể xóa nhà cung cấp vì đã có phiếu nhập liên quan.");
+                case NOT_FOUND -> setSupplierFlash(req,"error","Nhà cung cấp không còn tồn tại. Danh sách đã được cập nhật.");
+            }
+            redirectToList(req,res,query,page);
+        } catch(SQLException e) {
+            logSqlFailure(req,e,action);systemError(req,res,e);
+        }
+    }
+    private static void setSupplierFlash(HttpServletRequest req,String type,String message) {
+        HttpSession session=req.getSession(false);
+        if(session!=null) {
+            session.setAttribute("supplierFlash",message);
+            session.setAttribute("supplierFlashType",type);
+        }
+    }
+    private static void redirectToList(HttpServletRequest req,HttpServletResponse res,String query,int page)throws IOException {
+        String url=req.getContextPath()+"/app/suppliers?q="
+                +java.net.URLEncoder.encode(query,java.nio.charset.StandardCharsets.UTF_8)+"&page="+page;
+        res.sendRedirect(url);
     }
     private void create(HttpServletRequest req,HttpServletResponse res) throws ServletException,IOException {
         String name=value(req,"name"),address=value(req,"address"),phone=value(req,"phone"),email=value(req,"email"),returnTo=safeReturn(req.getParameter("returnTo")),draftId=safeDraftId(req.getParameter("draftId")),query=safeQuery(req.getParameter("q")); int page=safePage(req.getParameter("page"));

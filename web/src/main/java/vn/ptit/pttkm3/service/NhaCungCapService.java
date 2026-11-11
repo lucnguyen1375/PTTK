@@ -7,6 +7,7 @@ import vn.ptit.pttkm3.model.DataNormalization;
 import vn.ptit.pttkm3.model.NhaCungCap;
 
 public final class NhaCungCapService {
+    public enum DeleteResult { DELETED, IN_USE, NOT_FOUND }
     private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
     private final NhaCungCapDao dao;
     public NhaCungCapService(NhaCungCapDao dao) { this.dao=dao; }
@@ -22,6 +23,14 @@ public final class NhaCungCapService {
         Values v=validate(name,address,phone,email);
         try { return dao.update(id,version,v.name,v.address,v.phone,v.phoneCanonical,v.email,v.emailCanonical); }
         catch(SQLException e) { if("23000".equals(e.getSQLState())) throw new DuplicateSupplierException(); throw e; }
+    }
+    public DeleteResult delete(long id) throws SQLException {
+        if (id < 1) throw new IllegalArgumentException("ID nhà cung cấp không hợp lệ.");
+        return switch (dao.deleteIfUnused(id)) {
+            case DELETED -> DeleteResult.DELETED;
+            case IN_USE -> DeleteResult.IN_USE;
+            case NOT_FOUND -> DeleteResult.NOT_FOUND;
+        };
     }
     private static Values validate(String name,String address,String phone,String email) {
         if(name==null||name.isBlank())throw new IllegalArgumentException("Tên nhà cung cấp là bắt buộc.");

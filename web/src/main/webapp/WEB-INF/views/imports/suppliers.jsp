@@ -1,5 +1,5 @@
 ﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="vn.ptit.pttkm3.dao.NhaCungCapDao,vn.ptit.pttkm3.model.NhaCungCap,vn.ptit.pttkm3.service.ImportDraft,vn.ptit.pttkm3.web.SecuritySupport" %>
-<% NhaCungCapDao.Page page=(NhaCungCapDao.Page)request.getAttribute("suppliers"); ImportDraft draft=(ImportDraft)request.getAttribute("draft"); String q=(String)request.getAttribute("q"); %>
+<% NhaCungCapDao.Page supplierPage=(NhaCungCapDao.Page)request.getAttribute("suppliers"); ImportDraft draft=(ImportDraft)request.getAttribute("draft"); String q=(String)request.getAttribute("q"); %>
 <!doctype html>
 <html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chọn nhà cung cấp · Truyện Nhà Mình</title><link rel="stylesheet" href="${pageContext.request.contextPath}/assets/app.css"></head>
 <body><jsp:include page="/WEB-INF/views/partials/top.jsp" /><main class="wrap">
@@ -12,10 +12,10 @@
     </form>
   </section>
   <section class="card" style="margin-top:18px" aria-labelledby="supplier-results-title">
-    <div class="card-head"><h2 id="supplier-results-title">Danh sách nhà cung cấp</h2><span class="small"><%=page.total()%> kết quả</span></div>
-    <%if(page.items().isEmpty()){%><div class="empty"><strong>Không tìm thấy nhà cung cấp</strong>Thử từ khóa khác hoặc thêm nhà cung cấp mới.</div><%}else{%>
+    <div class="card-head"><h2 id="supplier-results-title">Danh sách nhà cung cấp</h2><span class="small"><%=supplierPage.total()%> kết quả</span></div>
+    <%if(supplierPage.items().isEmpty()){%><div class="empty"><strong>Không tìm thấy nhà cung cấp</strong>Thử từ khóa khác hoặc thêm nhà cung cấp mới.</div><%}else{%>
     <div class="table-wrap"><table class="table"><thead><tr><th>Mã</th><th>Tên nhà cung cấp</th><th>Địa chỉ</th><th>Điện thoại</th><th>Email</th><th>Chọn</th></tr></thead><tbody>
-      <%for(NhaCungCap supplier:page.items()){ %><tr><td class="code"><%=SecuritySupport.escape(supplier.getMaNCC())%></td><td><strong><%=SecuritySupport.escape(supplier.getTenNCC())%></strong></td><td><%=SecuritySupport.escape(supplier.getDiaChi())%></td><td><%=SecuritySupport.escape(supplier.getSoDienThoai())%></td><td><%=SecuritySupport.escape(supplier.getEmail())%></td><td>
+      <%for(NhaCungCap supplier:supplierPage.items()){ %><tr><td class="code"><%=SecuritySupport.escape(supplier.getMaNCC())%></td><td><strong><%=SecuritySupport.escape(supplier.getTenNCC())%></strong></td><td><%=SecuritySupport.escape(supplier.getDiaChi())%></td><td><%=SecuritySupport.escape(supplier.getSoDienThoai())%></td><td><%=SecuritySupport.escape(supplier.getEmail())%></td><td>
         <form class="stack" method="post" action="${pageContext.request.contextPath}/app/imports/<%=draft==null?"create":"change-supplier"%>">
           <input type="hidden" name="_csrf" value="<%=SecuritySupport.escape((String)request.getAttribute("csrfToken"))%>"><input type="hidden" name="supplierId" value="<%=supplier.getId()%>">
           <%if(draft!=null){%><input type="hidden" name="draftId" value="<%=SecuritySupport.escape(draft.id())%>"><label class="check-row"><input type="checkbox" name="confirmed" value="1" required><span>Xác nhận hủy phiếu tạm và chọn nhà cung cấp này</span></label><%}%>
@@ -23,10 +23,10 @@
         </form>
       </td></tr><% } %>
     </tbody></table></div>
-    <nav class="pagination" aria-label="Phân trang nhà cung cấp"><span class="page-count">Trang <%=page.page()%> / <%=page.pageCount()%></span>
-      <%if(page.page()>1){%><a class="btn sm" href="?q=<%=java.net.URLEncoder.encode(q==null?"":q,java.nio.charset.StandardCharsets.UTF_8)%>&amp;page=<%=page.page()-1%><%=draft==null?"":"&amp;draftId="+draft.id()%>">Trước</a><%}%>
-      <%if(page.page()<page.pageCount()){%><a class="btn sm" href="?q=<%=java.net.URLEncoder.encode(q==null?"":q,java.nio.charset.StandardCharsets.UTF_8)%>&amp;page=<%=page.page()+1%><%=draft==null?"":"&amp;draftId="+draft.id()%>">Sau</a><%}%>
+    <nav class="pagination" aria-label="Phân trang nhà cung cấp"><span class="page-count">Trang <%=supplierPage.page()%> / <%=supplierPage.pageCount()%></span>
+      <%if(supplierPage.page()>1){%><a class="btn sm" href="?q=<%=java.net.URLEncoder.encode(q==null?"":q,java.nio.charset.StandardCharsets.UTF_8)%>&amp;page=<%=supplierPage.page()-1%><%=draft==null?"":"&amp;draftId="+draft.id()%>">Trước</a><%}%>
+      <%if(supplierPage.page()<supplierPage.pageCount()){%><a class="btn sm" href="?q=<%=java.net.URLEncoder.encode(q==null?"":q,java.nio.charset.StandardCharsets.UTF_8)%>&amp;page=<%=supplierPage.page()+1%><%=draft==null?"":"&amp;draftId="+draft.id()%>">Sau</a><%}%>
     </nav><%}%>
   </section>
-  <div class="footer-actions spread" style="margin-top:16px"><a class="btn primary" href="${pageContext.request.contextPath}/app/suppliers/add?returnTo=import&amp;q=<%=java.net.URLEncoder.encode(q==null?"":q,java.nio.charset.StandardCharsets.UTF_8)%>&amp;page=<%=page.page()%><%=draft==null?"":"&amp;draftId="+java.net.URLEncoder.encode(draft.id(),java.nio.charset.StandardCharsets.UTF_8)%>">Thêm nhà cung cấp</a><%if(draft!=null){%><a class="btn" href="${pageContext.request.contextPath}/app/imports/draft?id=<%=SecuritySupport.escape(draft.id())%>">Quay lại phiếu</a><%}%></div>
+  <div class="footer-actions spread" style="margin-top:16px"><a class="btn primary" href="${pageContext.request.contextPath}/app/suppliers/add?returnTo=import&amp;q=<%=java.net.URLEncoder.encode(q==null?"":q,java.nio.charset.StandardCharsets.UTF_8)%>&amp;page=<%=supplierPage.page()%><%=draft==null?"":"&amp;draftId="+java.net.URLEncoder.encode(draft.id(),java.nio.charset.StandardCharsets.UTF_8)%>">Thêm nhà cung cấp</a><%if(draft!=null){%><a class="btn" href="${pageContext.request.contextPath}/app/imports/draft?id=<%=SecuritySupport.escape(draft.id())%>">Quay lại phiếu</a><%}%></div>
 </main></body></html>

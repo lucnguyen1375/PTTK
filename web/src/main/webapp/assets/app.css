@@ -137,6 +137,11 @@ label.check-row { display: flex; gap: 9px; align-items: flex-start; font-size: 1
 .table th { background: #f5f8fb; color: #38556c; font-size: 13px; font-weight: 750; white-space: nowrap; }
 .table td { color: #213d55; font-size: 14px; }
 .table tbody tr:hover { background: #f9fbfd; }
+.table tbody tr.supplier-select-row { cursor: pointer; }
+.table tbody tr.supplier-select-row.is-selected { background: #eaf3fb; }
+.table tbody tr.supplier-select-row:focus-within { outline: 2px solid var(--focus); outline-offset: -2px; }
+.supplier-radio-cell { width: 66px; text-align: center !important; vertical-align: middle !important; }
+.supplier-radio-cell input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
 .table tbody tr:last-child td { border-bottom: 0; }
 .table .numeric { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .table .code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; white-space: nowrap; }
@@ -148,6 +153,9 @@ label.check-row { display: flex; gap: 9px; align-items: flex-start; font-size: 1
 .empty strong { display: block; color: #29465f; margin-bottom: 5px; }
 .pagination { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; padding: 14px 18px; border-top: 1px solid var(--line); }
 .pagination .page-count { margin-right: auto; color: var(--muted); font-size: 14px; }
+.supplier-actions-panel { margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.supplier-selection-status { flex: 1 1 240px; margin: 0; color: var(--muted); }
+.supplier-action-buttons { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .total-row { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 20px; background: #f5f8fb; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
 .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .summary-item { padding: 14px 16px; border: 1px solid var(--line); border-radius: 9px; background: #f9fbfd; }
@@ -199,6 +207,9 @@ label.check-row { display: flex; gap: 9px; align-items: flex-start; font-size: 1
   .form-card { padding: 24px; }
   .footer-actions { justify-content: stretch; }
   .footer-actions > .btn, .footer-actions > button { flex: 1 1 auto; }
+  .supplier-actions-panel { align-items: stretch; }
+  .supplier-action-buttons { width: 100%; }
+  .supplier-action-buttons > .btn { flex: 1 1 130px; }
   .pagination { justify-content: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
