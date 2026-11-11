@@ -16,6 +16,8 @@
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
         <mysql.connector.version>9.5.0</mysql.connector.version>
+        <flyway.version>11.20.0</flyway.version>
+        <exec.maven.plugin.version>3.5.0</exec.maven.plugin.version>
     </properties>
 
     <dependencies>
@@ -50,4 +52,62 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>db-tools</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-maven-plugin</artifactId>
+                        <version>${flyway.version}</version>
+                        <configuration>
+                            <url>jdbc:mysql://${env.DB_HOST}:${env.DB_PORT}/${env.DB_NAME}?connectionTimeZone=Asia/Ho_Chi_Minh&amp;forceConnectionTimeZoneToSession=true</url>
+                            <user>${env.DB_USER}</user>
+                            <password>${env.DB_PASSWORD}</password>
+                            <locations>
+                                <location>filesystem:src/main/resources/db/migration</location>
+                            </locations>
+                            <connectRetries>20</connectRetries>
+                            <validateMigrationNaming>true</validateMigrationNaming>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.flywaydb</groupId>
+                                <artifactId>flyway-mysql</artifactId>
+                                <version>${flyway.version}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>com.mysql</groupId>
+                                <artifactId>mysql-connector-j</artifactId>
+                                <version>${mysql.connector.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec.maven.plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>seed-demo</id>
+                                <goals><goal>java</goal></goals>
+                                <configuration>
+                                    <mainClass>vn.ptit.pttkm3.db.SeedMain</mainClass>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>verify-schema</id>
+                                <goals><goal>java</goal></goals>
+                                <configuration>
+                                    <mainClass>vn.ptit.pttkm3.db.VerifyMain</mainClass>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

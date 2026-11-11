@@ -138,6 +138,8 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 
 ## 6. P2 — Mô hình dữ liệu và dữ liệu mẫu
 
+**Trạng thái: Hoàn thành ngày 11/11/2026.** Lược đồ, migration, model Java, seed demo, verifier và kết quả doanh thu được ghi tại [`web/docs/data-model.md`](web/docs/data-model.md).
+
 ### Công việc
 
 - Hoàn thiện mô hình thực thể và lược đồ CSDL theo quyết định P0; thống nhất tên trường và kiểu dữ liệu.
@@ -158,11 +160,21 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 
 ### Nghiệm thu
 
-- [ ] Tạo được CSDL mới và nạp dữ liệu mẫu theo hướng dẫn.
-- [ ] Không tạo được quan hệ mồ côi hoặc mã trùng trái với ràng buộc đã chốt.
-- [ ] Hai quyển cùng đầu truyện nhưng khác nguồn nhập truy được hai NCC đúng.
-- [ ] Có đủ thông tin để xác định phần tiền thuê của từng NCC trên mỗi hóa đơn trả.
-- [ ] Dữ liệu mẫu và kết quả kỳ vọng được ghi rõ, không dùng số tổng tùy ý.
+- [x] Sáu migration Flyway hiện chạy thành công trên CSDL MySQL 8.4; seed demo nạp thành công, chạy lại không ghi thêm dữ liệu.
+- [x] 18 bảng nghiệp vụ có khóa ngoại/khóa duy nhất theo mô hình; verifier xác nhận mã demo khớp ID và các đường tham chiếu chính không mồ côi.
+- [x] Cùng đầu truyện được nhập từ NCC 101 và 102; mỗi quyển vật lý truy đúng dòng nhập và NCC nguồn.
+- [x] Có giá chụp lúc mượn, ngày mượn/ngày trả và hóa đơn trả để phân bổ tiền thuê cho từng NCC.
+- [x] Ghi dữ liệu demo và kết quả tính tay cho tháng 01/2025, riêng ngày 03/01/2025 và 01/02/2025; verifier đối chiếu các tổng này.
+
+### Kết quả thực hiện
+
+- Nghiệm thu lại và sửa lỗi: xem [`web/docs/phase2-review.md`](web/docs/phase2-review.md). V5 bổ sung email bắt buộc và giới hạn thành tiền dòng nhập; verifier kiểm tra 13 thao tác sai bị từ chối và rollback.
+- Sáu migration hiện có trong `web/src/main/resources/db/migration` tạo 18 bảng nghiệp vụ; không tạo bảng lưu tổng thống kê. `app_seed_history` dùng riêng để chống nạp seed lặp.
+- Có 18 model ứng với bảng nghiệp vụ, cùng DTO `ThongKeNCC`, chuẩn hóa dữ liệu, mã nghiệp vụ và PBKDF2-HMAC-SHA256 cho mật khẩu seed.
+- `SeedMain` tạo ba NCC, hai khách hàng, hai đầu truyện, bốn quyển vật lý, các lần mượn/trả, một hóa đơn có nhiều NCC, nhiều lỗi trên một lượt trả và một tài sản cọc được trả.
+- `VerifyMain` xác nhận schema, mã, chuẩn hóa, nguồn quyển, ngày, giá lịch sử và doanh thu theo các khoảng ngày kỳ vọng.
+- Build/compile Java thành công; migration, seed, verifier đều chạy thành công. Chạy seed lần hai báo đã có và không thay đổi dữ liệu.
+- Quy tắc cần kiểm tra giữa nhiều bảng (thứ tự ngày trả và ngày lập hóa đơn) cùng giới hạn tổng tiền cần được áp đặt ở service trước khi ghi; chưa thuộc P2 vì DAO/service chưa triển khai.
 
 ## 7. P3 — Giao diện, điều hướng và thông báo
 
@@ -182,11 +194,13 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 
 ### Nghiệm thu
 
-- [ ] Mỗi luồng chuẩn và ngoại lệ có màn hình/trạng thái tương ứng.
-- [ ] Không có nút không có hành vi được đặc tả; không đưa nút Xóa NCC vào mặc định.
-- [ ] Mã chỉ đọc, dữ liệu đang chọn và dữ liệu đang lưu được thể hiện rõ.
-- [ ] Người dùng biết trường sai và cách sửa; lỗi không chỉ thể hiện bằng màu.
-- [ ] Luồng quay lại giữ dữ liệu đúng quy tắc đã chốt.
+- [x] Các luồng chuẩn và ngoại lệ đã có màn hình/trạng thái trong prototype tương tác.
+- [x] Các nút đã được nối tới hành vi mô phỏng theo phạm vi P3; không đưa nút Xóa NCC vào mặc định.
+- [x] Mã chỉ đọc, dữ liệu đang chọn và dữ liệu đang lưu được thể hiện rõ.
+- [x] Form có thông báo lỗi bằng chữ và hướng sửa; trạng thái tải báo cáo lỗi có thể thử lại.
+- [x] Luồng quay lại/đổi NCC/hủy phiếu có xác nhận và áp dụng quy tắc đã chốt.
+
+Kết quả nghiệm thu lại: P3 đạt ở mức prototype tự chứa, dữ liệu minh họa. Đã sửa lỗi cấu trúc dòng nhập, chi tiết hóa đơn theo NCC, hộp thoại, điều hướng và kiểm tra form; 16/16 kiểm tra hồi quy logic đạt, Chrome headless render đạt. Tương tác trình duyệt đầy đủ chuyển sang P5–P8 theo chấp thuận của người dùng. Chi tiết: [web/docs/phase3-4-acceptance.md](web/docs/phase3-4-acceptance.md).
 
 ## 8. P4 — Đăng nhập, phân quyền và phiên làm việc
 
@@ -206,13 +220,17 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 
 ### Nghiệm thu
 
-- [ ] Đúng tài khoản nhân viên thì vào được trang chính và hiện đúng thông tin.
-- [ ] Sai thông tin nhận thông báo chung, không tiết lộ tài khoản có tồn tại hay không.
-- [ ] Chưa đăng nhập, hết phiên hoặc đã đăng xuất thì không đọc/ghi được nghiệp vụ bằng URL trực tiếp.
-- [ ] Thay đổi mã nhân viên trong yêu cầu không làm thay đổi người lập phiếu.
-- [ ] Không xuất hiện mật khẩu trong log, URL hoặc thông báo lỗi.
+- [x] Đúng tài khoản nhân viên thì vào được trang chính và hiện đúng thông tin.
+- [x] Sai thông tin nhận thông báo chung, không tiết lộ tài khoản có tồn tại hay không; thử sai lần thứ 6 trong cửa sổ khóa trả HTTP 429.
+- [x] Chưa đăng nhập hoặc đã đăng xuất thì không đọc/ghi được đường dẫn được bảo vệ; GET chuyển về đăng nhập, POST trả HTTP 401.
+- [x] Danh tính trang chính lấy từ session/CSDL; tham số `employeeId=999` không thay đổi nhân viên hiển thị. Đối chiếu người lập phiếu trong CSDL chuyển sang nghiệm thu P6 khi có endpoint ghi phiếu.
+- [x] Kiểm tra luồng đăng nhập không đưa mật khẩu vào URL, trang lỗi hoặc log ứng dụng.
+
+Kết quả nghiệm thu lại: P4 đạt trong phạm vi nền tảng đăng nhập/phiên; 20/20 kiểm tra HTTP đạt. Các mục cần thêm dữ liệu/môi trường hoặc module ghi phiếu đã được người dùng cho phép hoãn và gán sang P6/P8/P9 trong [web/docs/phase3-4-acceptance.md](web/docs/phase3-4-acceptance.md); không cản trở bắt đầu P5.
 
 ## 9. P5 — Tìm kiếm, thêm và sửa NCC
+
+**Trạng thái: Hoàn thành.** Biên bản và bằng chứng chạy nằm trong [nghiệm thu P5–P7](web/docs/phase5-7-acceptance.md).
 
 ### Công việc
 
@@ -231,14 +249,16 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 
 ### Nghiệm thu
 
-- [ ] Tìm đúng theo từng tiêu chí đã chốt; không có kết quả không bị báo thành lỗi hệ thống.
-- [ ] Chưa chọn NCC thì không mở/lưu sửa nhầm đối tượng.
-- [ ] Dữ liệu không hợp lệ bị từ chối cả khi bỏ qua kiểm tra ở trình duyệt.
-- [ ] Thay mã NCC bằng yêu cầu thủ công không sửa được mã hoặc đối tượng ngoài yêu cầu hợp lệ.
-- [ ] Thêm/sửa thành công, lỗi và quay lại đều đúng thiết kế; lỗi lưu không làm mất nội dung form.
-- [ ] Sửa thông tin NCC không làm mất liên kết phiếu nhập cũ.
+- [x] Tìm theo mã/tên/địa chỉ, từ khóa ký tự đặc biệt và trạng thái không kết quả được kiểm tra.
+- [x] Màn hình sửa chỉ mở theo NCC được chọn; token phiên bản chặn thay ID trong yêu cầu.
+- [x] Dữ liệu sai và thông tin trùng bị từ chối ở máy chủ, nội dung form/CSRF được giữ khi hiển thị lỗi.
+- [x] Mã NCC chỉ đọc; yêu cầu đổi ID không thể sửa đối tượng khác.
+- [x] Thêm và sửa thành công đã chạy qua CSDL; điều hướng và thông báo theo nghiệp vụ đã chốt.
+- [x] Câu lệnh sửa chỉ cập nhật thuộc tính NCC và version; khóa/liên kết phiếu nhập không bị thay đổi.
 
 ## 10. P6 — Đầu truyện và nhập truyện
+
+**Trạng thái: Luồng chức năng, lưu thành công và rollback khi lỗi giữa giao dịch đã kiểm tra.** Timeout thật và rời trang bằng trình duyệt được ghi là việc P8.
 
 ### Công việc
 
@@ -258,17 +278,20 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 
 ### Nghiệm thu
 
-- [ ] Nhập được phiếu nhiều đầu truyện; tổng tiền khớp số lượng × đơn giá từng dòng.
-- [ ] Thêm dòng vào phiếu tạm chưa tạo quyển truyện trong CSDL.
-- [ ] Lưu phiếu có các dòng số lượng 2 và 3 tạo đúng 5 quyển, đúng đầu truyện và nguồn nhập.
-- [ ] Phiếu rỗng, số lượng không nguyên/không dương hoặc giá sai quy tắc bị từ chối.
-- [ ] Sửa tổng tiền/nhân viên/định danh trong yêu cầu không làm sai dữ liệu lưu.
-- [ ] Mô phỏng lỗi giữa quá trình lưu: không còn phiếu, chi tiết hoặc quyển truyện dở dang.
-- [ ] Gửi lại cùng một yêu cầu lưu không tạo thêm phiếu hoặc quyển trùng.
-- [ ] Thêm đầu truyện rồi quay lại vẫn giữ phiếu đang lập.
-- [ ] Hủy/rời trang, hết phiên và nhiều tab tuân theo quy tắc đã chốt, không trộn phiếu.
+- [x] Phiếu nhiều đầu truyện có tổng đúng theo số lượng × đơn giá.
+- [x] Đầu truyện mới ở dạng tạm chưa có trong CSDL trước khi xác nhận lưu.
+- [x] Hai dòng số lượng 2 và 3 tạo đúng 5 quyển; CSDL xác nhận một phiếu, hai dòng và đúng tổng.
+- [x] Phiếu rỗng, số lượng không dương và giá lẻ bị từ chối; draft vẫn hiển thị sau lỗi.
+- [x] Gửi thêm tổng/NCC/nhân viên giả trong yêu cầu không thay đổi dữ liệu lấy từ draft và session.
+- [x] Trigger lỗi tạm tại bước tạo quyển xác nhận transaction rollback phiếu, dòng, quyển và đầu truyện; draft còn dùng thử lại được.
+- [x] Gửi lại cùng draft sau lưu trả về đúng phiếu đã tạo, không phát sinh dữ liệu trùng.
+- [x] Draft được giữ khi tìm/thêm NCC; đổi NCC yêu cầu xác nhận và tạo draft độc lập.
+- [x] Hủy có xác nhận, phiên bản cũ và nhiều tab đã kiểm tra; draft không trộn giữa các tab.
+- [ ] Kiểm tra rời trang bằng trình duyệt và hết phiên thực tế chuyển sang P8.
 
 ## 11. P7 — Thống kê NCC và chi tiết hóa đơn trả
+
+**Trạng thái: Chức năng và số liệu mẫu đã nghiệm thu.** Công thức sử dụng theo mô tả trong [mô hình dữ liệu P2](web/docs/data-model.md); kiểm thử khi CSDL ngừng hoạt động được chuyển sang P8.
 
 ### Công việc
 
@@ -286,16 +309,19 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 
 ### Nghiệm thu
 
-- [ ] Ngày trống, sai định dạng hoặc ngày bắt đầu sau ngày kết thúc nhận thông báo rõ ràng.
-- [ ] Kết quả đúng với dữ liệu ở trước, trong và sau khoảng thời gian, kể cả hai biên.
-- [ ] Cùng đầu truyện từ hai NCC được phân doanh thu đúng theo từng quyển.
-- [ ] Một hóa đơn có hai NCC không bị tính toàn bộ giá trị cho mỗi NCC.
-- [ ] Nhiều lần thuê cùng quyển được tính đúng; các quan hệ lỗi/cọc không nhân bản tiền thuê.
-- [ ] Tổng phần doanh thu các hóa đơn trên trang chi tiết bằng doanh thu NCC trong bảng tổng hợp khi không có giao dịch mới xen giữa.
-- [ ] Đổi giá thuê hiện tại không làm thay đổi sai doanh thu lịch sử.
-- [ ] Quay lại vẫn giữ bộ lọc; danh sách sắp xếp giảm dần; trạng thái rỗng và lỗi tải khác nhau.
+- [x] Ngày trống, sai định dạng hoặc khoảng ngày đảo ngược được báo lỗi rõ.
+- [x] Kết quả kiểm tra các khoảng tháng 01, ngày 03/01 và ngày 01/02; cả hai biên được tính.
+- [x] Cùng đầu truyện nhập từ hai NCC được phân theo nguồn của từng quyển vật lý.
+- [x] Hóa đơn có hai NCC hiển thị đúng phần tiền của NCC đang xem.
+- [x] Nhiều lần thuê dùng giá chụp tại giao dịch; nối bảng báo cáo không nhân tiền theo lỗi/cọc.
+- [x] Tổng trang chi tiết khớp tổng NCC trong dữ liệu mẫu.
+- [x] Kết quả giữ đúng doanh thu lịch sử dù giá quyển hiện tại khác.
+- [x] Quay lại dùng snapshot giữ nguyên bộ lọc/kết quả; bảng giảm dần; dữ liệu rỗng hiển thị riêng.
+- [ ] Tiêm lỗi CSDL khi tải báo cáo để xác nhận trang lỗi khác trạng thái rỗng; chuyển sang P8.
 
 ## 12. P8 — Kiểm thử tích hợp và hoàn thiện chất lượng
+
+Tiếp nhận các mục kiểm tra P3–P4 đã hoãn: tương tác trình duyệt tổng hợp, timeout thực tế, lỗi CSDL khi đăng nhập và tài khoản không phải nhân viên có mật khẩu hợp lệ. Checklist chi tiết ở [biên bản P3–P4](web/docs/phase3-4-acceptance.md).
 
 ### Công việc
 
@@ -321,6 +347,8 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 - [ ] Các màn hình đạt mục tiêu tương thích và ngưỡng phản hồi đã thống nhất.
 
 ## 13. P9 — Triển khai, nghiệm thu và bàn giao
+
+Tiếp nhận kiểm tra HTTPS/cookie/proxy và đánh giá giới hạn bộ đếm đăng nhập theo cấu hình triển khai thực tế từ [biên bản P3–P4](web/docs/phase3-4-acceptance.md).
 
 ### Công việc
 
@@ -368,4 +396,4 @@ Các mục này chỉ được bổ sung khi có quyết định mở rộng ph�
 - [ ] Truy đúng nguồn NCC theo từng quyển và thống kê đúng phần tiền từ hóa đơn trả.
 - [ ] Mã nguồn, CSDL, cấu hình mẫu và tài liệu đủ để chạy lại dự án.
 
-Trạng thái cập nhật ngày 11/11/2026: P1 đã hoàn thành; các phase còn lại chưa được xác nhận hoàn thành.
+Trạng thái cập nhật ngày 11/11/2026: P1–P5 và P7 đã hoàn thành trong phạm vi nghiệm thu hiện tại; P6 đã kiểm tra cả giao dịch thành công và rollback. Kiểm thử timeout/rời trang thật, UI tổng hợp và P9 nằm ở các phase tiếp theo. P8 và P9 chưa thực hiện. Xem [biên bản P5–P7](web/docs/phase5-7-acceptance.md).

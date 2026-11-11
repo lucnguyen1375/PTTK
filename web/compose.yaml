@@ -48,9 +48,35 @@ services:
       - app-network
     restart: unless-stopped
 
+  db-tools:
+    image: maven:3.9.16-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320
+    profiles: [tools]
+    working_dir: /workspace
+    entrypoint: [mvn]
+    command: [-B, -ntp, -Pdb-tools, flyway:migrate]
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-pttk_m3}
+      DB_USER: ${DB_USER:-pttk_app}
+      DB_PASSWORD: ${DB_PASSWORD:?Create web/.env from .env.example and set DB_PASSWORD}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - .:/workspace:ro
+      - maven-target:/workspace/target
+      - maven-cache:/root/.m2
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
 
 volumes:
   mysql-data:
+  maven-target:
+  maven-cache:

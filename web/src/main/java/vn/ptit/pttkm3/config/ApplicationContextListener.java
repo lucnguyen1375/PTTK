@@ -3,10 +3,13 @@ package vn.ptit.pttkm3.config;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
 import jakarta.servlet.annotation.WebListener;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.EnumSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +23,12 @@ public final class ApplicationContextListener implements ServletContextListener 
     @Override
     public void contextInitialized(ServletContextEvent event) {
         ServletContext context = event.getServletContext();
+        context.setSessionTimeout(30);
+        context.setSessionTrackingModes(EnumSet.of(SessionTrackingMode.COOKIE));
+        SessionCookieConfig cookie = context.getSessionCookieConfig();
+        cookie.setHttpOnly(true);
+        cookie.setSecure(!"development".equalsIgnoreCase(System.getenv("APP_ENV")));
+        cookie.setAttribute("SameSite", "Lax");
         try {
             AppConfig config = AppConfig.fromEnvironment(System.getenv());
             context.setAttribute(DATA_SOURCE_ATTRIBUTE, DatabaseDataSource.create(config));

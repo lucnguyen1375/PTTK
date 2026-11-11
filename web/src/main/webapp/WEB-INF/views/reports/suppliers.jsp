@@ -1,0 +1,22 @@
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="java.text.NumberFormat,java.util.Locale,vn.ptit.pttkm3.service.SupplierReportSnapshot,vn.ptit.pttkm3.model.SupplierRevenue,vn.ptit.pttkm3.web.SecuritySupport" %>
+<%SupplierReportSnapshot snapshot=(SupplierReportSnapshot)request.getAttribute("snapshot"); String from=(String)request.getAttribute("from"),to=(String)request.getAttribute("to"),error=(String)request.getAttribute("error"); boolean hasRun=Boolean.TRUE.equals(request.getAttribute("hasRun")); boolean dateRangeError=error!=null&&error.contains("không được sau"),fromError=error!=null&&(dateRangeError||error.contains("Ngày bắt đầu")),toError=error!=null&&(dateRangeError||error.contains("Ngày kết thúc")); NumberFormat money=NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN"));%>
+<!doctype html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thống kê doanh thu nhà cung cấp · Truyện Nhà Mình</title><link rel="stylesheet" href="${pageContext.request.contextPath}/assets/app.css"></head><body>
+<jsp:include page="/WEB-INF/views/partials/top.jsp" /><main class="wrap">
+  <div class="page-intro"><div class="eyebrow">Báo cáo</div><h1>Doanh thu nhà cung cấp</h1><p class="lead">Thống kê dựa trên các hóa đơn trả trong khoảng ngày đã chọn.</p></div>
+  <%if(error!=null){%><div id="error-summary" class="alert error" role="alert" tabindex="-1"><strong>Không thể chạy thống kê.</strong><br><%=SecuritySupport.escape(error)%></div><script>document.getElementById('error-summary').focus();</script><%}%>
+  <section class="card card-body" aria-label="Bộ lọc ngày thống kê"><form method="get" action="${pageContext.request.contextPath}/app/reports/suppliers">
+    <input type="hidden" name="run" value="1"><div class="form-grid">
+      <div class="field"><label for="from-date">Từ ngày <span class="req">*</span></label><input id="from-date" name="from" type="date" value="<%=SecuritySupport.escape(from)%>" required <%=fromError?"aria-invalid=\"true\" aria-describedby=\"from-date-error\"":""%>><%if(fromError){%><p class="field-error" id="from-date-error"><%=SecuritySupport.escape(error)%></p><%}%></div>
+      <div class="field"><label for="to-date">Đến ngày <span class="req">*</span></label><input id="to-date" name="to" type="date" value="<%=SecuritySupport.escape(to)%>" required <%=toError?"aria-invalid=\"true\" aria-describedby=\"to-date-error\"":""%>><%if(toError){%><p class="field-error" id="to-date-error"><%=SecuritySupport.escape(error)%></p><%}%></div>
+      <div class="footer-actions form-actions"><button class="btn primary" type="submit">Xem thống kê</button></div>
+    </div><p class="field-help">Ngày bắt đầu và ngày kết thúc đều được tính vào kỳ thống kê.</p>
+  </form></section>
+
+  <%if(!hasRun){%><section class="card card-body" style="margin-top:18px"><div class="empty" style="margin:0"><strong>Chưa có kết quả thống kê</strong>Chọn khoảng ngày rồi bấm “Xem thống kê” để tải doanh thu theo hóa đơn trả.</div></section>
+  <%}else if(snapshot.rows().isEmpty()){%><section class="card card-body" style="margin-top:18px"><div class="empty" style="margin:0"><strong>Không có hóa đơn trả trong kỳ này</strong>Đổi khoảng ngày để xem kỳ khác. Hệ thống chỉ tính các hóa đơn trả thuộc khoảng ngày đã chọn.</div></section>
+  <%}else{%><section class="card" style="margin-top:18px" aria-labelledby="report-results-title"><div class="card-head"><h2 id="report-results-title">Kết quả thống kê</h2><span class="small"><%=snapshot.from().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))%> – <%=snapshot.to().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))%></span></div>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Nhà cung cấp</th><th class="numeric">Số hóa đơn trả</th><th class="numeric">Tổng doanh thu</th><th>Chi tiết</th></tr></thead><tbody>
+      <%for(SupplierRevenue item:snapshot.rows()){%><tr><td><strong><%=SecuritySupport.escape(item.supplierName())%></strong><div class="small"><%=SecuritySupport.escape(item.supplierCode())%></div></td><td class="numeric"><%=item.returnInvoiceCount()%></td><td class="numeric"><strong><%=money.format(item.revenue())%> ₫</strong></td><td><a class="btn sm" href="${pageContext.request.contextPath}/app/reports/suppliers/details?snapshot=<%=snapshot.id()%>&amp;supplierId=<%=item.supplierId()%>">Xem hóa đơn trả</a></td></tr><%}%>
+    </tbody></table></div>
+  </section><%}%>
+</main></body></html>

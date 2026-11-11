@@ -1,11 +1,2 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isErrorPage="true" %>
-<!doctype html>
-<html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lỗi xử lý</title></head>
-<body>
-<main>
-    <h1>Không thể xử lý yêu cầu</h1>
-    <p>Đã xảy ra lỗi trong lúc xử lý. Vui lòng thử lại sau.</p>
-    <p>Mã yêu cầu: <code><%= request.getAttribute("vn.ptit.pttkm3.web.RequestLoggingFilter.requestId") %></code></p>
-    <p><a href="${pageContext.request.contextPath}/">Về trang chính</a></p>
-</main>
-</body></html>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="vn.ptit.pttkm3.web.SecuritySupport" %>
+<!doctype html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lỗi xử lý</title><link rel="stylesheet" href="${pageContext.request.contextPath}/assets/app.css"></head><body><main class="wrap"><section class="card card-body" style="max-width:680px;margin:12vh auto"><div class="eyebrow">Lỗi hệ thống</div><h1>Chưa thể xử lý yêu cầu</h1><div class="alert error" role="alert">Hệ thống gặp sự cố. Thử lại sau hoặc quay về trang đăng nhập.</div><p class="muted">Mã yêu cầu: <code><%=SecuritySupport.escape(String.valueOf(request.getAttribute("vn.ptit.pttkm3.web.RequestLoggingFilter.requestId")))%></code></p><div class="footer-actions"><a class="btn primary" href="${pageContext.request.contextPath}/">Trang chính</a></div></section></main></body></html>

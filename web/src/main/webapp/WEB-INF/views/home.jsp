@@ -1,26 +1,14 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<!doctype html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PTTK M3 — Hệ thống quản lí cửa hàng cho thuê truyện</title>
-    <style>
-        :root { color-scheme: light; font-family: system-ui, sans-serif; color: #17212b; background: #f3f6fa; }
-        body { margin: 0; min-height: 100vh; display: grid; place-items: center; }
-        main { width: min(34rem, calc(100% - 3rem)); padding: 2rem; background: white; border: 1px solid #d9e1ea; border-radius: 1rem; box-shadow: 0 1rem 3rem #17212b12; }
-        h1 { margin-top: 0; font-size: 1.6rem; }
-        p { line-height: 1.6; }
-        code { color: #075985; }
-        .status { padding: .75rem 1rem; background: #e8f5ee; border-radius: .5rem; color: #14532d; }
-    </style>
-</head>
-<body>
-<main>
-    <h1>Quản lí cửa hàng cho thuê truyện</h1>
-    <p>Khung ứng dụng Module M3 đã khởi động. Các chức năng nghiệp vụ sẽ được bổ sung ở những phase tiếp theo.</p>
-    <p class="status">Ứng dụng đang phục vụ yêu cầu. Trạng thái cơ sở dữ liệu: <a href="${pageContext.request.contextPath}/health/ready">kiểm tra kết nối</a>.</p>
-    <p>Mã yêu cầu: <code><%= request.getAttribute("vn.ptit.pttkm3.web.RequestLoggingFilter.requestId") %></code></p>
-</main>
-</body>
-</html>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="vn.ptit.pttkm3.auth.SessionEmployee,vn.ptit.pttkm3.web.SecuritySupport,vn.ptit.pttkm3.web.RequestLoggingFilter" %>
+<%SessionEmployee employee=(SessionEmployee)session.getAttribute(vn.ptit.pttkm3.web.AuthenticationFilter.EMPLOYEE_ATTRIBUTE); String flash=(String)session.getAttribute("supplierFlash"); if(flash!=null)session.removeAttribute("supplierFlash");%>
+<!doctype html><html lang="vi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Trang chính · Truyện Nhà Mình</title><link rel="stylesheet" href="${pageContext.request.contextPath}/assets/app.css"></head>
+<body><jsp:include page="/WEB-INF/views/partials/top.jsp" /><main class="wrap">
+  <div class="eyebrow">Không gian làm việc</div><h1>Chào <%=SecuritySupport.escape(employee.getFullName())%></h1><p class="lead">Chọn nghiệp vụ cần thực hiện.</p>
+  <%if(flash!=null){%><div class="alert info" role="status"><%=SecuritySupport.escape(flash)%></div><%}%>
+  <div class="notice">Các nghiệp vụ trong hệ thống được thực hiện bởi nhân viên đang đăng nhập.</div>
+  <section class="grid" aria-label="Nhóm chức năng">
+    <article class="card card-body"><div class="icon" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6M9 9h.01M15 9h.01"/></svg></div><h2>Nhà cung cấp</h2><p>Tìm kiếm thông tin, thêm nhà cung cấp và cập nhật dữ liệu liên hệ.</p><a class="btn primary" href="${pageContext.request.contextPath}/app/suppliers">Mở chức năng</a></article>
+    <article class="card card-body"><div class="icon" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v18H7.5A2.5 2.5 0 0 0 5 22z"/><path d="M5 4.5v15A2.5 2.5 0 0 1 7.5 17H20M9 6h7M9 10h7"/></svg></div><h2>Nhập truyện</h2><p>Lập phiếu tạm, chọn hoặc thêm đầu truyện, rồi xác nhận lưu hóa đơn nhập.</p><a class="btn primary" href="${pageContext.request.contextPath}/app/imports">Mở chức năng</a></article>
+    <article class="card card-body"><div class="icon" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h17M8 15l4-4 3 2 5-6"/><path d="M16 7h4v4"/></svg></div><h2>Thống kê doanh thu</h2><p>Lọc doanh thu nhà cung cấp theo ngày lập hóa đơn trả và mở chi tiết từng hóa đơn.</p><a class="btn primary" href="${pageContext.request.contextPath}/app/reports/suppliers">Mở chức năng</a></article>
+  </section>
+  <p class="footer">Mã yêu cầu: <code><%=SecuritySupport.escape((String)request.getAttribute(RequestLoggingFilter.REQUEST_ID_ATTRIBUTE))%></code></p>
+</main></body></html>
